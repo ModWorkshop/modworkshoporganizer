@@ -15,12 +15,14 @@ bool isValidModID(int id)
   return (id > 0);
 }
 
-NexusTab::NexusTab(ModInfoDialogTabContext cx)
+ModworkshopTab::ModworkshopTab(ModInfoDialogTabContext cx)
     : ModInfoDialogTab(std::move(cx)), m_requestStarted(false), m_loading(false)
 {
   ui->modID->setValidator(new QIntValidator(ui->modID));
-  ui->endorse->setVisible(core().settings().nexus().endorsementIntegration());
-  ui->track->setVisible(core().settings().nexus().trackedIntegration());
+  //Currently no user login
+  //ui->endorse->setVisible(core().settings().modworkshop().endorsementIntegration());
+  //Curently no tracking
+  //ui->track->setVisible(core().settings().modworkshop().trackedIntegration());
 
   connect(ui->modID, &QLineEdit::editingFinished, [&] {
     onModIDChanged();
@@ -36,15 +38,16 @@ NexusTab::NexusTab(ModInfoDialogTabContext cx)
   connect(ui->refresh, &QPushButton::clicked, [&] {
     onRefreshBrowser();
   });
-  connect(ui->visitNexus, &QPushButton::clicked, [&] {
-    onVisitNexus();
+  connect(ui->visitModworkshop, &QPushButton::clicked, [&] {
+    onVisitModworkshop();
   });
-  connect(ui->endorse, &QPushButton::clicked, [&] {
-    onEndorse();
-  });
-  connect(ui->track, &QPushButton::clicked, [&] {
-    onTrack();
-  });
+  //Currently no user login
+  //connect(ui->endorse, &QPushButton::clicked, [&] {
+  //  onEndorse();
+  //});
+  //connect(ui->track, &QPushButton::clicked, [&] {
+  //  onTrack();
+  //});
 
   connect(ui->hasCustomURL, &QCheckBox::toggled, [&] {
     onCustomURLToggled();
@@ -57,12 +60,12 @@ NexusTab::NexusTab(ModInfoDialogTabContext cx)
   });
 }
 
-NexusTab::~NexusTab()
+ModworkshopTab::~ModworkshopTab()
 {
   cleanup();
 }
 
-void NexusTab::cleanup()
+void ModworkshopTab::cleanup()
 {
   if (m_modConnection) {
     disconnect(m_modConnection);
@@ -70,24 +73,24 @@ void NexusTab::cleanup()
   }
 }
 
-void NexusTab::clear()
+void ModworkshopTab::clear()
 {
   ui->modID->clear();
   ui->sourceGame->clear();
   ui->version->clear();
-  ui->browser->setPage(new NexusTabWebpage(ui->browser));
+  ui->browser->setPage(new ModworkshopTabWebpage(ui->browser));
   ui->hasCustomURL->setChecked(false);
   ui->customURL->clear();
   setHasData(false);
 }
 
-void NexusTab::update()
+void ModworkshopTab::update()
 {
   QScopedValueRollback loading(m_loading, true);
 
   clear();
 
-  ui->modID->setText(QString("%1").arg(mod().nexusId()));
+  ui->modID->setText(QString("%1").arg(mod().modworkshopId()));
 
   QString gameName = mod().gameName();
   ui->sourceGame->addItem(core().managedGame()->gameName(),
@@ -108,25 +111,25 @@ void NexusTab::update()
 
   ui->sourceGame->setCurrentIndex(ui->sourceGame->findData(gameName));
 
-  auto* page = new NexusTabWebpage(ui->browser);
+  auto* page = new ModworkshopTabWebpage(ui->browser);
   ui->browser->setPage(page);
 
-  connect(page, &NexusTabWebpage::linkClicked, [&](const QUrl& url) {
+  connect(page, &ModworkshopTabWebpage::linkClicked, [&](const QUrl& url) {
     shell::Open(url);
   });
 
-  ui->endorse->setEnabled((mod().endorsedState() == EndorsedState::ENDORSED_FALSE) ||
-                          (mod().endorsedState() == EndorsedState::ENDORSED_NEVER));
+  //ui->endorse->setEnabled((mod().endorsedState() == EndorsedState::ENDORSED_FALSE) ||
+  //                        (mod().endorsedState() == EndorsedState::ENDORSED_NEVER));
 
-  setHasData(mod().nexusId() >= 0);
+  setHasData(mod().modworkshopId() >= 0);
 }
 
-void NexusTab::firstActivation()
+void ModworkshopTab::firstActivation()
 {
   updateWebpage();
 }
 
-void NexusTab::setMod(ModInfoPtr mod, MOShared::FilesOrigin* origin)
+void ModworkshopTab::setMod(ModInfoPtr mod, MOShared::FilesOrigin* origin)
 {
   cleanup();
 
@@ -137,12 +140,12 @@ void NexusTab::setMod(ModInfoPtr mod, MOShared::FilesOrigin* origin)
   });
 }
 
-bool NexusTab::usesOriginFiles() const
+bool ModworkshopTab::usesOriginFiles() const
 {
   return false;
 }
 
-void NexusTab::updateVersionColor()
+void ModworkshopTab::updateVersionColor()
 {
   if (mod().version() != mod().newestVersion()) {
     ui->version->setStyleSheet("color: red");
@@ -154,15 +157,15 @@ void NexusTab::updateVersionColor()
   }
 }
 
-void NexusTab::updateWebpage()
+void ModworkshopTab::updateWebpage()
 {
-  const int modID = mod().nexusId();
+  const int modID = mod().modworkshopId();
 
   if (isValidModID(modID)) {
-    const QString nexusLink =
-        NexusInterface::instance().getModURL(modID, mod().gameName());
+    const QString modworkshopLink =
+        ModworkshopInterface::instance().getModURL(modID, mod().gameName());
 
-    ui->visitNexus->setToolTip(nexusLink);
+    ui->visitModworkshop->setToolTip(modworkshopLink);
     refreshData(modID);
   } else {
     onModChanged();
@@ -175,21 +178,21 @@ void NexusTab::updateWebpage()
   ui->visitCustomURL->setEnabled(mod().hasCustomURL());
   ui->visitCustomURL->setToolTip(mod().parseCustomURL().toString());
 
-  updateTracking();
+  //updateTracking();
 }
 
-void NexusTab::updateTracking()
-{
-  if (mod().trackedState() == TrackedState::TRACKED_TRUE) {
-    ui->track->setChecked(true);
-    ui->track->setText(tr("Tracked"));
-  } else {
-    ui->track->setChecked(false);
-    ui->track->setText(tr("Untracked"));
-  }
-}
+//void ModworkshopTab::updateTracking()
+//{
+//  if (mod().trackedState() == TrackedState::TRACKED_TRUE) {
+//    ui->track->setChecked(true);
+//    ui->track->setText(tr("Tracked"));
+//  } else {
+//    ui->track->setChecked(false);
+//    ui->track->setText(tr("Untracked"));
+//  }
+//}
 
-void NexusTab::refreshData(int modID)
+void ModworkshopTab::refreshData(int modID)
 {
   if (tryRefreshData(modID)) {
     m_requestStarted = true;
@@ -198,10 +201,10 @@ void NexusTab::refreshData(int modID)
   }
 }
 
-bool NexusTab::tryRefreshData(int modID)
+bool ModworkshopTab::tryRefreshData(int modID)
 {
   if (isValidModID(modID) && !m_requestStarted) {
-    if (mod().updateNXMInfo()) {
+    if (mod().updateMWSInfo()) {
       ui->browser->setHtml("");
       return true;
     }
@@ -210,16 +213,16 @@ bool NexusTab::tryRefreshData(int modID)
   return false;
 }
 
-void NexusTab::onModChanged()
+void ModworkshopTab::onModChanged()
 {
   m_requestStarted = false;
 
-  const QString nexusDescription = mod().getNexusDescription();
+  const QString modworkshopDescription = mod().getModworkshopDescription();
 
   QString descriptionAsHTML = R"(
 <html>
   <head>
-    <style class="nexus-description">
+    <style class="modworkshop-description">
     body
     {
       font-family: sans-serif;
@@ -297,14 +300,14 @@ void NexusTab::onModChanged()
   <body>%1</body>
 </html>)";
 
-  if (nexusDescription.isEmpty()) {
+  if (modworkshopDescription.isEmpty()) {
     descriptionAsHTML = descriptionAsHTML.arg(tr(R"(
       <div style="text-align: center;">
-      <p>This mod does not have a valid Nexus ID. You can add a custom web
+      <p>This mod does not have a valid Modworkshop ID. You can add a custom web
       page for it in the "Custom URL" box below.</p>
       </div>)"));
   } else {
-    descriptionAsHTML = descriptionAsHTML.arg(BBCode::convertToHTML(nexusDescription));
+    descriptionAsHTML = descriptionAsHTML.arg(BBCode::convertToHTML(modworkshopDescription));
   }
 
   ui->browser->page()->setHtml(descriptionAsHTML);
@@ -312,18 +315,18 @@ void NexusTab::onModChanged()
   updateTracking();
 }
 
-void NexusTab::onModIDChanged()
+void ModworkshopTab::onModIDChanged()
 {
   if (m_loading) {
     return;
   }
 
-  const int oldID = mod().nexusId();
+  const int oldID = mod().modworkshopId();
   const int newID = ui->modID->text().toInt();
 
   if (oldID != newID) {
-    mod().setNexusID(newID);
-    mod().setLastNexusQuery(QDateTime::fromSecsSinceEpoch(0));
+    mod().setModworkshopID(newID);
+    mod().setLastModworkshopQuery(QDateTime::fromSecsSinceEpoch(0));
 
     ui->browser->page()->setHtml("");
 
@@ -333,7 +336,7 @@ void NexusTab::onModIDChanged()
   }
 }
 
-void NexusTab::onSourceGameChanged()
+void ModworkshopTab::onSourceGameChanged()
 {
   if (m_loading) {
     return;
@@ -342,14 +345,14 @@ void NexusTab::onSourceGameChanged()
   for (auto game : plugin().plugins<MOBase::IPluginGame>()) {
     if (game->gameName() == ui->sourceGame->currentText()) {
       mod().setGameName(game->gameShortName());
-      mod().setLastNexusQuery(QDateTime::fromSecsSinceEpoch(0));
-      refreshData(mod().nexusId());
+      mod().setLastModworkshopQuery(QDateTime::fromSecsSinceEpoch(0));
+      refreshData(mod().modworkshopId());
       return;
     }
   }
 }
 
-void NexusTab::onVersionChanged()
+void ModworkshopTab::onVersionChanged()
 {
   if (m_loading) {
     return;
@@ -360,53 +363,53 @@ void NexusTab::onVersionChanged()
   updateVersionColor();
 }
 
-void NexusTab::onRefreshBrowser()
+void ModworkshopTab::onRefreshBrowser()
 {
-  const auto modID = mod().nexusId();
+  const auto modID = mod().modworkshopId();
 
   if (isValidModID(modID)) {
-    mod().setLastNexusQuery(QDateTime::fromSecsSinceEpoch(0));
+    mod().setLastModworkshopQuery(QDateTime::fromSecsSinceEpoch(0));
     updateWebpage();
   } else {
-    log::info("Mod has no valid Nexus ID, info can't be updated.");
+    log::info("Mod has no valid Modworkshop ID, info can't be updated.");
   }
 }
 
-void NexusTab::onVisitNexus()
+void ModworkshopTab::onVisitModworkshop()
 {
-  const int modID = mod().nexusId();
+  const int modID = mod().modworkshopId();
 
   if (isValidModID(modID)) {
-    const QString nexusLink =
-        NexusInterface::instance().getModURL(modID, mod().gameName());
+    const QString modworkshopLink =
+        ModworkshopInterface::instance().getModURL(modID, mod().gameName());
 
-    shell::Open(QUrl(nexusLink));
+    shell::Open(QUrl(modworkshopLink));
   }
 }
 
-void NexusTab::onEndorse()
+//void ModworkshopTab::onEndorse()
+//{
+  // use modPtr() instead of mod() or this because the callback may be
+  // executed after the dialog is closed
+//  core().loggedInAction(parentWidget(), [m = modPtr()] {
+//    m->endorse(true);
+//  });
+//}
+
+void ModworkshopTab::onTrack()
 {
   // use modPtr() instead of mod() or this because the callback may be
   // executed after the dialog is closed
-  core().loggedInAction(parentWidget(), [m = modPtr()] {
-    m->endorse(true);
-  });
-}
+//  core().loggedInAction(parentWidget(), [m = modPtr()] {
+//    if (m->trackedState() == TrackedState::TRACKED_TRUE) {
+//      m->track(false);
+//    } else {
+//      m->track(true);
+//    }
+//  });
+//}
 
-void NexusTab::onTrack()
-{
-  // use modPtr() instead of mod() or this because the callback may be
-  // executed after the dialog is closed
-  core().loggedInAction(parentWidget(), [m = modPtr()] {
-    if (m->trackedState() == TrackedState::TRACKED_TRUE) {
-      m->track(false);
-    } else {
-      m->track(true);
-    }
-  });
-}
-
-void NexusTab::onCustomURLToggled()
+void ModworkshopTab::onCustomURLToggled()
 {
   if (m_loading) {
     return;
@@ -417,7 +420,7 @@ void NexusTab::onCustomURLToggled()
   ui->visitCustomURL->setEnabled(mod().hasCustomURL());
 }
 
-void NexusTab::onCustomURLChanged()
+void ModworkshopTab::onCustomURLChanged()
 {
   if (m_loading) {
     return;
@@ -427,7 +430,7 @@ void NexusTab::onCustomURLChanged()
   ui->visitCustomURL->setToolTip(mod().parseCustomURL().toString());
 }
 
-void NexusTab::onVisitCustomURL()
+void ModworkshopTab::onVisitCustomURL()
 {
   const QUrl url = mod().parseCustomURL();
   if (url.isValid()) {

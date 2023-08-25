@@ -1,14 +1,14 @@
-#ifndef MODINFODIALOGNEXUS_H
-#define MODINFODIALOGNEXUS_H
+#ifndef MODINFODIALOGMODWORKSHOP_H
+#define MODINFODIALOGMODWORKSHOP_H
 
 #include "modinfodialogtab.h"
 
-class NexusTabWebpage : public QWebEnginePage
+class ModworkshopTabWebpage : public QWebEnginePage
 {
   Q_OBJECT
 
 public:
-  NexusTabWebpage(QObject* parent = 0) : QWebEnginePage(parent) {}
+  ModworkshopTabWebpage(QObject* parent = 0) : QWebEnginePage(parent) {}
 
   bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type,
                                bool) override
@@ -25,14 +25,14 @@ signals:
   void linkClicked(const QUrl&);
 };
 
-class NexusTab : public ModInfoDialogTab
+class ModworkshopTab : public ModInfoDialogTab
 {
   Q_OBJECT;
 
 public:
-  NexusTab(ModInfoDialogTabContext cx);
+  ModworkshopTab(ModInfoDialogTabContext cx);
 
-  ~NexusTab();
+  ~ModworkshopTab();
 
   void clear() override;
   void update() override;
@@ -59,13 +59,13 @@ private:
   void onVersionChanged();
 
   void onRefreshBrowser();
-  void onVisitNexus();
-  void onEndorse();
-  void onTrack();
+  void onVisitModworkshop();
+  //void onEndorse();
+  //void onTrack();
 
   void onCustomURLToggled();
   void onCustomURLChanged();
   void onVisitCustomURL();
 };
 
-#endif  // MODINFODIALOGNEXUS_H
+#endif  // MODINFODIALOGMODWORKSHOP_H

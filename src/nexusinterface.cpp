@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "nexusinterface.h"
+#include "modworkshopinterface.h"
 
 #include "bbcode.h"
 #include "iplugingame.h"
-#include "nxmaccessmanager.h"
+#include "mwsaccessmanager.h"
 #include "selectiondialog.h"
 #include "settings.h"
 #include "shared/util.h"
@@ -39,59 +39,59 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 using namespace MOShared;
 
-void throttledWarning(const APIUserAccount& user)
-{
-  log::error("You have fewer than {} requests remaining ({}). Only downloads and "
-             "login validation are being allowed.",
-             APIUserAccount::ThrottleThreshold, user.remainingRequests());
-}
+//void throttledWarning(const APIUserAccount& user)
+//{
+//  log::error("You have fewer than {} requests remaining ({}). Only downloads and "
+//             "login validation are being allowed.",
+//             APIUserAccount::ThrottleThreshold, user.remainingRequests());
+//}
 
-NexusBridge::NexusBridge(PluginContainer* pluginContainer, const QString& subModule)
-    : m_Interface(&NexusInterface::instance()), m_SubModule(subModule)
+ModworkshopBridge::ModworkshopBridge(PluginContainer* pluginContainer, const QString& subModule)
+    : m_Interface(&ModworkshopInterface::instance()), m_SubModule(subModule)
 {}
 
-void NexusBridge::requestDescription(QString gameName, int modID, QVariant userData)
+void ModworkshopBridge::requestDescription(QString gameName, int modID, QVariant userData)
 {
   m_RequestIDs.insert(
       m_Interface->requestDescription(gameName, modID, this, userData, m_SubModule));
 }
 
-void NexusBridge::requestFiles(QString gameName, int modID, QVariant userData)
+void ModworkshopBridge::requestFiles(QString gameName, int modID, QVariant userData)
 {
   m_RequestIDs.insert(
       m_Interface->requestFiles(gameName, modID, this, userData, m_SubModule));
 }
 
-void NexusBridge::requestFileInfo(QString gameName, int modID, int fileID,
+void ModworkshopBridge::requestFileInfo(QString gameName, int modID, int fileID,
                                   QVariant userData)
 {
   m_RequestIDs.insert(m_Interface->requestFileInfo(gameName, modID, fileID, this,
                                                    userData, m_SubModule));
 }
 
-void NexusBridge::requestDownloadURL(QString gameName, int modID, int fileID,
+void ModworkshopBridge::requestDownloadURL(QString gameName, int modID, int fileID,
                                      QVariant userData)
 {
   m_RequestIDs.insert(m_Interface->requestDownloadURL(gameName, modID, fileID, this,
                                                       userData, m_SubModule));
 }
 
-void NexusBridge::requestToggleEndorsement(QString gameName, int modID,
-                                           QString modVersion, bool endorse,
-                                           QVariant userData)
-{
-  m_RequestIDs.insert(m_Interface->requestToggleEndorsement(
-      gameName, modID, modVersion, endorse, this, userData, m_SubModule));
-}
+//void ModworkshopBridge::requestToggleEndorsement(QString gameName, int modID,
+//                                           QString modVersion, bool endorse,
+//                                           QVariant userData)
+//{
+//  m_RequestIDs.insert(m_Interface->requestToggleEndorsement(
+//      gameName, modID, modVersion, endorse, this, userData, m_SubModule));
+//}
 
-void NexusBridge::requestToggleTracking(QString gameName, int modID, bool track,
-                                        QVariant userData)
-{
-  m_RequestIDs.insert(m_Interface->requestToggleTracking(gameName, modID, track, this,
-                                                         userData, m_SubModule));
-}
+//void ModworkshopBridge::requestToggleTracking(QString gameName, int modID, bool track,
+//                                        QVariant userData)
+//{
+//  m_RequestIDs.insert(m_Interface->requestToggleTracking(gameName, modID, track, this,
+//                                                         userData, m_SubModule));
+//}
 
-void NexusBridge::nxmDescriptionAvailable(QString gameName, int modID,
+void ModworkshopBridge::mwsDescriptionAvailable(QString gameName, int modID,
                                           QVariant userData, QVariant resultData,
                                           int requestID)
 {
@@ -103,7 +103,7 @@ void NexusBridge::nxmDescriptionAvailable(QString gameName, int modID,
   }
 }
 
-void NexusBridge::nxmFilesAvailable(QString gameName, int modID, QVariant userData,
+void ModworkshopBridge::mwsFilesAvailable(QString gameName, int modID, QVariant userData,
                                     QVariant resultData, int requestID)
 {
   std::set<int>::iterator iter = m_RequestIDs.find(requestID);
@@ -121,6 +121,9 @@ void NexusBridge::nxmFilesAvailable(QString gameName, int modID, QVariant userDa
       temp.uri             = fileInfo["file_name"].toString();
       temp.name            = fileInfo["name"].toString();
       temp.description     = BBCode::convertToHTML(fileInfo["description"].toString());
+      temp.license         = BBCode::convertToHTML(fileInfo["license"].toString());
+      temp.changelog     = BBCode::convertToHTML(fileInfo["changelog"].toString());
+      temp.instructions     = BBCode::convertToHTML(fileInfo["instructions"].toString());
       temp.version         = VersionInfo(fileInfo["version"].toString());
       temp.categoryID      = fileInfo["category_id"].toInt();
       temp.fileID          = fileInfo["file_id"].toInt();
@@ -132,7 +135,7 @@ void NexusBridge::nxmFilesAvailable(QString gameName, int modID, QVariant userDa
   }
 }
 
-void NexusBridge::nxmFileInfoAvailable(QString gameName, int modID, int fileID,
+void ModworkshopBridge::mwsFileInfoAvailable(QString gameName, int modID, int fileID,
                                        QVariant userData, QVariant resultData,
                                        int requestID)
 {
@@ -143,7 +146,7 @@ void NexusBridge::nxmFileInfoAvailable(QString gameName, int modID, int fileID,
   }
 }
 
-void NexusBridge::nxmDownloadURLsAvailable(QString gameName, int modID, int fileID,
+void ModworkshopBridge::mwsDownloadURLsAvailable(QString gameName, int modID, int fileID,
                                            QVariant userData, QVariant resultData,
                                            int requestID)
 {
@@ -154,47 +157,47 @@ void NexusBridge::nxmDownloadURLsAvailable(QString gameName, int modID, int file
   }
 }
 
-void NexusBridge::nxmEndorsementsAvailable(QVariant userData, QVariant resultData,
-                                           int requestID)
-{
-  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
-  if (iter != m_RequestIDs.end()) {
-    m_RequestIDs.erase(iter);
-    emit endorsementsAvailable(userData, resultData);
-  }
-}
+//void ModworkshopBridge::mwsEndorsementsAvailable(QVariant userData, QVariant resultData,
+//                                           int requestID)
+//{
+//  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
+//  if (iter != m_RequestIDs.end()) {
+//    m_RequestIDs.erase(iter);
+//    emit endorsementsAvailable(userData, resultData);
+//  }
+//}
 
-void NexusBridge::nxmEndorsementToggled(QString gameName, int modID, QVariant userData,
-                                        QVariant resultData, int requestID)
-{
-  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
-  if (iter != m_RequestIDs.end()) {
-    m_RequestIDs.erase(iter);
-    emit endorsementToggled(gameName, modID, userData, resultData);
-  }
-}
+//void ModworkshopBridge::mwsEndorsementToggled(QString gameName, int modID, QVariant userData,
+//                                        QVariant resultData, int requestID)
+//{
+//  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
+//  if (iter != m_RequestIDs.end()) {
+//    m_RequestIDs.erase(iter);
+//    emit endorsementToggled(gameName, modID, userData, resultData);
+//  }
+//}
 
-void NexusBridge::nxmTrackedModsAvailable(QVariant userData, QVariant resultData,
-                                          int requestID)
-{
-  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
-  if (iter != m_RequestIDs.end()) {
-    m_RequestIDs.erase(iter);
-    emit trackedModsAvailable(userData, resultData);
-  }
-}
+//void ModworkshopBridge::mwsTrackedModsAvailable(QVariant userData, QVariant resultData,
+//                                          int requestID)
+//{
+//  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
+//  if (iter != m_RequestIDs.end()) {
+//    m_RequestIDs.erase(iter);
+//    emit trackedModsAvailable(userData, resultData);
+//  }
+//}
 
-void NexusBridge::nxmTrackingToggled(QString gameName, int modID, QVariant userData,
-                                     bool tracked, int requestID)
-{
-  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
-  if (iter != m_RequestIDs.end()) {
-    m_RequestIDs.erase(iter);
-    emit trackingToggled(gameName, modID, userData, tracked);
-  }
-}
+//void ModworkshopBridge::mwsTrackingToggled(QString gameName, int modID, QVariant userData,
+ //                                    bool tracked, int requestID)
+//{
+//  std::set<int>::iterator iter = m_RequestIDs.find(requestID);
+//  if (iter != m_RequestIDs.end()) {
+//    m_RequestIDs.erase(iter);
+//    emit trackingToggled(gameName, modID, userData, tracked);
+//  }
+//}
 
-void NexusBridge::nxmRequestFailed(QString gameName, int modID, int fileID,
+void ModworkshopBridge::mwsRequestFailed(QString gameName, int modID, int fileID,
                                    QVariant userData, int requestID, int errorCode,
                                    const QString& errorMessage)
 {
@@ -205,70 +208,26 @@ void NexusBridge::nxmRequestFailed(QString gameName, int modID, int fileID,
   }
 }
 
-QAtomicInt NexusInterface::NXMRequestInfo::s_NextID(0);
+QAtomicInt ModworkshopInterface::mwsRequestInfo::s_NextID(0);
 
-APILimits NexusInterface::defaultAPILimits()
-{
-  // https://app.swaggerhub.com/apis-docs/NexusMods/nexus-mods_public_api_params_in_form_data/1.0#/
-  const int MaxDaily  = 2500;
-  const int MaxHourly = 100;
+static ModworkshopInterface* g_instance = nullptr;
 
-  APILimits limits;
-
-  limits.maxDailyRequests        = MaxDaily;
-  limits.remainingDailyRequests  = MaxDaily;
-  limits.maxHourlyRequests       = MaxHourly;
-  limits.remainingHourlyRequests = MaxHourly;
-
-  return limits;
-}
-
-APILimits NexusInterface::parseLimits(const QNetworkReply* reply)
-{
-  return parseLimits(reply->rawHeaderPairs());
-}
-
-APILimits
-NexusInterface::parseLimits(const QList<QNetworkReply::RawHeaderPair>& headers)
-{
-  APILimits limits;
-
-  for (const auto& pair : headers) {
-    const auto name = QString(pair.first).toLower();
-
-    if (name == "x-rl-daily-limit") {
-      limits.maxDailyRequests = pair.second.toInt();
-    } else if (name == "x-rl-daily-remaining") {
-      limits.remainingDailyRequests = pair.second.toInt();
-    } else if (name == "x-rl-hourly-limit") {
-      limits.maxHourlyRequests = pair.second.toInt();
-    } else if (name == "x-rl-hourly-remaining") {
-      limits.remainingHourlyRequests = pair.second.toInt();
-    }
-  }
-
-  return limits;
-}
-
-static NexusInterface* g_instance = nullptr;
-
-NexusInterface::NexusInterface(Settings* s) : m_PluginContainer(nullptr)
+ModworkshopInterface::ModworkshopInterface(Settings* s) : m_PluginContainer(nullptr)
 {
   MO_ASSERT(!g_instance);
   g_instance = this;
 
-  m_User.limits(defaultAPILimits());
   m_MOVersion = createVersionInfo();
 
-  m_AccessManager = new NXMAccessManager(this, s, m_MOVersion.displayString(3));
+  m_AccessManager = new mwsAccessManager(this, s, m_MOVersion.displayString(3));
 
   m_DiskCache = new QNetworkDiskCache(this);
 
-  connect(m_AccessManager, SIGNAL(requestNXMDownload(QString)), this,
-          SLOT(downloadRequestedNXM(QString)));
+  connect(m_AccessManager, SIGNAL(requestmwsDownload(QString)), this,
+          SLOT(downloadRequestedmws(QString)));
 }
 
-NexusInterface::~NexusInterface()
+ModworkshopInterface::~ModworkshopInterface()
 {
   cleanup();
 
@@ -276,46 +235,33 @@ NexusInterface::~NexusInterface()
   g_instance = nullptr;
 }
 
-NXMAccessManager* NexusInterface::getAccessManager()
+mwsAccessManager* ModworkshopInterface::getAccessManager()
 {
   return m_AccessManager;
 }
 
-NexusInterface& NexusInterface::instance()
+ModworkshopInterface& ModworkshopInterface::instance()
 {
   MO_ASSERT(g_instance);
   return *g_instance;
 }
 
-void NexusInterface::setCacheDirectory(const QString& directory)
+void ModworkshopInterface::setCacheDirectory(const QString& directory)
 {
   m_DiskCache->setCacheDirectory(directory);
   m_AccessManager->setCache(m_DiskCache);
 }
 
-void NexusInterface::loginCompleted()
-{
-  nextRequest();
-}
-
-void NexusInterface::setUserAccount(const APIUserAccount& user)
-{
-  m_User = user;
-  emit requestsChanged(getAPIStats(), m_User);
-}
-
-void NexusInterface::interpretNexusFileName(const QString& fileName, QString& modName,
+void ModworkshopInterface::interpretModworkshopFileName(const QString& fileName, QString& modName,
                                             int& modID, bool query)
 {
   // guess the mod name from the file name
   static const QRegularExpression complex(
-      R"(^([a-zA-Z0-9_'"\-.() ]*?)([-_ ][VvRr]+[0-9]+(?:(?:[\.][0-9]+){0,2}|(?:[_][0-9]+){0,2}|(?:[-.][0-9]+){0,2})?[ab]?)??-([1-9][0-9]+)?-.*?\.(zip|rar|7z))");
+      R"(^([0-9]+)-([a-zA-Z0-9_'"\-.() ]+?)@*.*?\.(zip|rar|7z))");
   // complex regex explanation:
-  // group 1: modname.
-  // group 2: optional version,
-  //  assumed to start with v (empty most of the time).
-  // group 3: NexusId,
-  //  assumed wrapped in "-", will miss single digit IDs for better accuracy.
+  // group 1: ModworkshopID.
+  // group 2: Modname
+  // group 3: Version,
   // If no id is present the whole regex does not match.
   static const QRegularExpression simple(R"(^[^a-zA-Z]*([a-zA-Z_ ]+))");
   auto complexMatch = complex.match(fileName);
@@ -325,9 +271,9 @@ void NexusInterface::interpretNexusFileName(const QString& fileName, QString& mo
   modID = -1;
 
   if (complexMatch.hasMatch()) {
-    modName = complexMatch.captured(1);
-    if (!query && !complexMatch.captured(3).isNull()) {
-      modID = complexMatch.captured(3).toInt();
+    modName = complexMatch.captured(2);
+    if (!query && !complexMatch.captured(1).isNull()) {
+      modID = complexMatch.captured(1).toInt();
     }
   } else if (simpleMatch.hasMatch()) {
     modName = simpleMatch.captured(0);
@@ -371,22 +317,21 @@ void NexusInterface::interpretNexusFileName(const QString& fileName, QString& mo
   }
 }
 
-bool NexusInterface::isURLGameRelated(const QUrl& url) const
+bool ModworkshopInterface::isURLGameRelated(const QUrl& url) const
 {
   QString const name(url.toString());
-  return name.startsWith(getGameURL("") + "/") ||
-         name.startsWith(getOldModsURL("") + "/");
+  return name.startsWith(getGameURL("") + "/");
 }
 
-QString NexusInterface::getGameURL(QString gameName) const
+QString ModworkshopInterface::getGameURL(QString gameName) const
 {
   IPluginGame* game = getGame(gameName);
   if (game != nullptr) {
-    QString gameNexusName = game->gameNexusName().toLower();
-    if (gameNexusName.isEmpty()) {
+    QString gameModworkshopName = game->gameModworkshopName().toLower();
+    if (gameModworkshopName.isEmpty()) {
       return "";
     } else {
-      return "https://www.nexusmods.com/" + gameNexusName;
+      return "https://modworkshop.net/g/" + gameModworkshopName;
     }
   } else {
     log::error("getGameURL can't find plugin for {}", gameName);
@@ -394,24 +339,13 @@ QString NexusInterface::getGameURL(QString gameName) const
   }
 }
 
-QString NexusInterface::getOldModsURL(QString gameName) const
+QString ModworkshopInterface::getModURL(int modID, QString gameName = "") const
 {
-  IPluginGame* game = getGame(gameName);
-  if (game != nullptr) {
-    return "https://" + game->gameNexusName().toLower() + ".nexusmods.com/mods";
-  } else {
-    log::error("getOldModsURL can't find plugin for {}", gameName);
-    return "";
-  }
-}
-
-QString NexusInterface::getModURL(int modID, QString gameName = "") const
-{
-  return QString("%1/mods/%2").arg(getGameURL(gameName)).arg(modID);
+  return QString("https://modworkshop.net/mods/%1").arg(modID);
 }
 
 std::vector<std::pair<QString, QString>>
-NexusInterface::getGameChoices(const MOBase::IPluginGame* game)
+ModworkshopInterface::getGameChoices(const MOBase::IPluginGame* game)
 {
   std::vector<std::pair<QString, QString>> choices;
   choices.push_back(
@@ -428,105 +362,102 @@ NexusInterface::getGameChoices(const MOBase::IPluginGame* game)
   return choices;
 }
 
-bool NexusInterface::isModURL(int modID, const QString& url) const
+bool ModworkshopInterface::isModURL(int modID, const QString& url) const
 {
   if (QUrl(url) == QUrl(getModURL(modID))) {
     return true;
   }
-  // Try the alternate (old style) mod name
-  QString alt = QString("%1/%2").arg(getOldModsURL("")).arg(modID);
-  return QUrl(alt) == QUrl(url);
 }
 
-void NexusInterface::setPluginContainer(PluginContainer* pluginContainer)
+void ModworkshopInterface::setPluginContainer(PluginContainer* pluginContainer)
 {
   m_PluginContainer = pluginContainer;
 }
 
-int NexusInterface::requestDescription(QString gameName, int modID, QObject* receiver,
+int ModworkshopInterface::requestDescription(QString gameName, int modID, QObject* receiver,
                                        QVariant userData, const QString& subModule,
                                        MOBase::IPluginGame const* game)
 {
-  NXMRequestInfo requestInfo(modID, NXMRequestInfo::TYPE_DESCRIPTION, userData,
+  mwsRequestInfo requestInfo(modID, mwsRequestInfo::TYPE_DESCRIPTION, userData,
                              subModule, game);
   m_RequestQueue.enqueue(requestInfo);
 
-  connect(this, SIGNAL(nxmDescriptionAvailable(QString, int, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsDescriptionAvailable(QString, int, QVariant, QVariant, int)),
           receiver,
-          SLOT(nxmDescriptionAvailable(QString, int, QVariant, QVariant, int)),
+          SLOT(mwsDescriptionAvailable(QString, int, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestModInfo(QString gameName, int modID, QObject* receiver,
+int ModworkshopInterface::requestModInfo(QString gameName, int modID, QObject* receiver,
                                    QVariant userData, const QString& subModule,
                                    MOBase::IPluginGame const* game)
-{
-  if (m_User.shouldThrottle()) {
-    throttledWarning(m_User);
-    return -1;
-  }
+//{
+//  if (m_User.shouldThrottle()) {
+//    throttledWarning(m_User);
+//    return -1;
+//  }
 
-  NXMRequestInfo requestInfo(modID, NXMRequestInfo::TYPE_MODINFO, userData, subModule,
+  mwsRequestInfo requestInfo(modID, mwsRequestInfo::TYPE_MODINFO, userData, subModule,
                              game);
   m_RequestQueue.enqueue(requestInfo);
 
-  connect(this, SIGNAL(nxmModInfoAvailable(QString, int, QVariant, QVariant, int)),
-          receiver, SLOT(nxmModInfoAvailable(QString, int, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsModInfoAvailable(QString, int, QVariant, QVariant, int)),
+          receiver, SLOT(mwsModInfoAvailable(QString, int, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestUpdateInfo(QString gameName,
-                                      NexusInterface::UpdatePeriod period,
+int ModworkshopInterface::requestUpdateInfo(QString gameName,
+                                      ModworkshopInterface::UpdatePeriod period,
                                       QObject* receiver, QVariant userData,
                                       const QString& subModule,
                                       const MOBase::IPluginGame* game)
 {
-  if (m_User.shouldThrottle()) {
-    throttledWarning(m_User);
-    return -1;
-  }
+  //if (m_User.shouldThrottle()) {
+  //  throttledWarning(m_User);
+  //  return -1;
+  //}
 
-  NXMRequestInfo requestInfo(period, NXMRequestInfo::TYPE_CHECKUPDATES, userData,
+  mwsRequestInfo requestInfo(period, mwsRequestInfo::TYPE_CHECKUPDATES, userData,
                              subModule, game);
   m_RequestQueue.enqueue(requestInfo);
 
-  connect(this, SIGNAL(nxmUpdateInfoAvailable(QString, QVariant, QVariant, int)),
-          receiver, SLOT(nxmUpdateInfoAvailable(QString, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsUpdateInfoAvailable(QString, QVariant, QVariant, int)),
+          receiver, SLOT(mwsUpdateInfoAvailable(QString, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestUpdates(const int& modID, QObject* receiver,
+int ModworkshopInterface::requestUpdates(const int& modID, QObject* receiver,
                                    QVariant userData, QString gameName,
                                    const QString& subModule)
 {
-  if (m_User.shouldThrottle()) {
-    throttledWarning(m_User);
-    return -1;
-  }
+  //if (m_User.shouldThrottle()) {
+  //  throttledWarning(m_User);
+  //  return -1;
+  //}
 
   IPluginGame* game = getGame(gameName);
   if (game == nullptr) {
@@ -534,62 +465,65 @@ int NexusInterface::requestUpdates(const int& modID, QObject* receiver,
     return -1;
   }
 
-  NXMRequestInfo requestInfo(modID, NXMRequestInfo::TYPE_GETUPDATES, userData,
+  mwsRequestInfo requestInfo(modID, mwsRequestInfo::TYPE_GETUPDATES, userData,
                              subModule, game);
   m_RequestQueue.enqueue(requestInfo);
 
-  connect(this, SIGNAL(nxmUpdatesAvailable(QString, int, QVariant, QVariant, int)),
-          receiver, SLOT(nxmUpdatesAvailable(QString, int, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsUpdatesAvailable(QString, int, QVariant, QVariant, int)),
+          receiver, SLOT(mwsUpdatesAvailable(QString, int, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-void NexusInterface::fakeFiles()
+void ModworkshopInterface::fakeFiles()
 {
   static int id = 42;
 
   QVariantList result;
   QVariantMap fileMap;
-  fileMap["uri"]         = "fakeURI";
-  fileMap["name"]        = "fakeName";
-  fileMap["description"] = "fakeDescription";
-  fileMap["version"]     = "1.0.0";
-  fileMap["category_id"] = "1";
-  fileMap["id"]          = "1";
-  fileMap["size"]        = "512";
+  fileMap["uri"]          = "fakeURI";
+  fileMap["name"]         = "fakeName";
+  fileMap["description"]  = "fakeDescription";
+  fileMap["license"]      = "fakeLicense";
+  fileMap["changelog"]    = "fakeChangelog";
+  fileMap["instructions"] = "fakeInstructions";
+  fileMap["version"]      = "1.0.0";
+  fileMap["category_id"]  = "1";
+  fileMap["id"]           = "1";
+  fileMap["size"]         = "512";
   result.append(fileMap);
 
-  emit nxmFilesAvailable("fakeGame", 1234, "fake", result, id++);
+  emit mwsFilesAvailable("fakeGame", 1234, "fake", result, id++);
 }
 
-int NexusInterface::requestFiles(QString gameName, int modID, QObject* receiver,
+int ModworkshopInterface::requestFiles(QString gameName, int modID, QObject* receiver,
                                  QVariant userData, const QString& subModule,
                                  MOBase::IPluginGame const* game)
 {
-  NXMRequestInfo requestInfo(modID, NXMRequestInfo::TYPE_FILES, userData, subModule,
+  mwsRequestInfo requestInfo(modID, mwsRequestInfo::TYPE_FILES, userData, subModule,
                              game);
   m_RequestQueue.enqueue(requestInfo);
-  connect(this, SIGNAL(nxmFilesAvailable(QString, int, QVariant, QVariant, int)),
-          receiver, SLOT(nxmFilesAvailable(QString, int, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsFilesAvailable(QString, int, QVariant, QVariant, int)),
+          receiver, SLOT(mwsFilesAvailable(QString, int, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestFileInfo(QString gameName, int modID, int fileID,
+int ModworkshopInterface::requestFileInfo(QString gameName, int modID, int fileID,
                                     QObject* receiver, QVariant userData,
                                     const QString& subModule)
 {
@@ -599,148 +533,148 @@ int NexusInterface::requestFileInfo(QString gameName, int modID, int fileID,
     return -1;
   }
 
-  NXMRequestInfo requestInfo(modID, fileID, NXMRequestInfo::TYPE_FILEINFO, userData,
+  mwsRequestInfo requestInfo(modID, fileID, mwsRequestInfo::TYPE_FILEINFO, userData,
                              subModule, gamePlugin);
   m_RequestQueue.enqueue(requestInfo);
 
   connect(
-      this, SIGNAL(nxmFileInfoAvailable(QString, int, int, QVariant, QVariant, int)),
-      receiver, SLOT(nxmFileInfoAvailable(QString, int, int, QVariant, QVariant, int)),
+      this, SIGNAL(mwsFileInfoAvailable(QString, int, int, QVariant, QVariant, int)),
+      receiver, SLOT(mwsFileInfoAvailable(QString, int, int, QVariant, QVariant, int)),
       Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestDownloadURL(QString gameName, int modID, int fileID,
+int ModworkshopInterface::requestDownloadURL(QString gameName, int modID, int fileID,
                                        QObject* receiver, QVariant userData,
                                        const QString& subModule,
                                        MOBase::IPluginGame const* game)
 {
-  NXMRequestInfo requestInfo(modID, fileID, NXMRequestInfo::TYPE_DOWNLOADURL, userData,
+  mwsRequestInfo requestInfo(modID, fileID, mwsRequestInfo::TYPE_DOWNLOADURL, userData,
                              subModule, game);
   m_RequestQueue.enqueue(requestInfo);
 
   connect(this,
-          SIGNAL(nxmDownloadURLsAvailable(QString, int, int, QVariant, QVariant, int)),
+          SIGNAL(mwsDownloadURLsAvailable(QString, int, int, QVariant, QVariant, int)),
           receiver,
-          SLOT(nxmDownloadURLsAvailable(QString, int, int, QVariant, QVariant, int)),
+          SLOT(mwsDownloadURLsAvailable(QString, int, int, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-int NexusInterface::requestEndorsementInfo(QObject* receiver, QVariant userData,
-                                           const QString& subModule)
-{
-  NXMRequestInfo requestInfo(NXMRequestInfo::TYPE_ENDORSEMENTS, userData, subModule);
-  m_RequestQueue.enqueue(requestInfo);
+//int ModworkshopInterface::requestEndorsementInfo(QObject* receiver, QVariant userData,
+//                                           const QString& subModule)
+//{
+//  mwsRequestInfo requestInfo(mwsRequestInfo::TYPE_ENDORSEMENTS, userData, subModule);
+//  m_RequestQueue.enqueue(requestInfo);
+//
+//  connect(this, SIGNAL(mwsEndorsementsAvailable(QVariant, QVariant, int)), receiver,
+//          SLOT(mwsEndorsementsAvailable(QVariant, QVariant, int)),
+//          Qt::UniqueConnection);
+//
+//  connect(
+//      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      Qt::UniqueConnection);
+//
+//  nextRequest();
+//  return requestInfo.m_ID;
+//}
 
-  connect(this, SIGNAL(nxmEndorsementsAvailable(QVariant, QVariant, int)), receiver,
-          SLOT(nxmEndorsementsAvailable(QVariant, QVariant, int)),
-          Qt::UniqueConnection);
+//int ModworkshopInterface::requestToggleEndorsement(QString gameName, int modID,
+//                                             QString modVersion, bool endorse,
+//                                             QObject* receiver, QVariant userData,
+//                                             const QString& subModule,
+//                                             MOBase::IPluginGame const* game)
+//{
+//  if (m_User.shouldThrottle()) {
+//    throttledWarning(m_User);
+//    return -1;
+//  }
 
-  connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      Qt::UniqueConnection);
+ // mwsRequestInfo requestInfo(modID, modVersion, mwsRequestInfo::TYPE_TOGGLEENDORSEMENT,
+ //                            userData, subModule, game);
+ // requestInfo.m_Endorse = endorse;
+ // m_RequestQueue.enqueue(requestInfo);
+ //
+ // connect(this, SIGNAL(mwsEndorsementToggled(QString, int, QVariant, QVariant, int)),
+ //         receiver, SLOT(mwsEndorsementToggled(QString, int, QVariant, QVariant, int)),
+ //         Qt::UniqueConnection);
+//
+//  connect(
+//      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      Qt::UniqueConnection);
+//
+//  nextRequest();
+//  return requestInfo.m_ID;
+//}
 
-  nextRequest();
-  return requestInfo.m_ID;
-}
+//int ModworkshopInterface::requestTrackingInfo(QObject* receiver, QVariant userData,
+//                                        const QString& subModule)
+//{
+//  mwsRequestInfo requestInfo(mwsRequestInfo::TYPE_TRACKEDMODS, userData, subModule);
+//  m_RequestQueue.enqueue(requestInfo);
+//
+//  connect(this, SIGNAL(mwsTrackedModsAvailable(QVariant, QVariant, int)), receiver,
+//          SLOT(mwsTrackedModsAvailable(QVariant, QVariant, int)), Qt::UniqueConnection);
+//
+//  connect(
+//      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+//      Qt::UniqueConnection);
+//
+//  nextRequest();
+//  return requestInfo.m_ID;
+//}
 
-int NexusInterface::requestToggleEndorsement(QString gameName, int modID,
-                                             QString modVersion, bool endorse,
-                                             QObject* receiver, QVariant userData,
-                                             const QString& subModule,
-                                             MOBase::IPluginGame const* game)
-{
-  if (m_User.shouldThrottle()) {
-    throttledWarning(m_User);
-    return -1;
-  }
+//int ModworkshopInterface::requestToggleTracking(QString gameName, int modID, bool track,
+//                                          QObject* receiver, QVariant userData,
+//                                          const QString& subModule,
+//                                          MOBase::IPluginGame const* game)
+//{
+//  if (m_User.shouldThrottle()) {
+//    throttledWarning(m_User);
+//    return -1;
+//  }
+//
+//  mwsRequestInfo requestInfo(modID, mwsRequestInfo::TYPE_TOGGLETRACKING, userData,
+//                             subModule, game);
+//  requestInfo.m_Track = track;
+//  m_RequestQueue.enqueue(requestInfo);
+//
+//  connect(this, SIGNAL(mwsTrackingToggled(QString, int, QVariant, bool, int)), receiver,
+//          SLOT(mwsTrackingToggled(QString, int, QVariant, bool, int)),
+//          Qt::UniqueConnection);
+//
+//  connect(
+//      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+ //     receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+ //     Qt::UniqueConnection);
+//
+//  nextRequest();
+//  return requestInfo.m_ID;
+//}
 
-  NXMRequestInfo requestInfo(modID, modVersion, NXMRequestInfo::TYPE_TOGGLEENDORSEMENT,
-                             userData, subModule, game);
-  requestInfo.m_Endorse = endorse;
-  m_RequestQueue.enqueue(requestInfo);
-
-  connect(this, SIGNAL(nxmEndorsementToggled(QString, int, QVariant, QVariant, int)),
-          receiver, SLOT(nxmEndorsementToggled(QString, int, QVariant, QVariant, int)),
-          Qt::UniqueConnection);
-
-  connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      Qt::UniqueConnection);
-
-  nextRequest();
-  return requestInfo.m_ID;
-}
-
-int NexusInterface::requestTrackingInfo(QObject* receiver, QVariant userData,
-                                        const QString& subModule)
-{
-  NXMRequestInfo requestInfo(NXMRequestInfo::TYPE_TRACKEDMODS, userData, subModule);
-  m_RequestQueue.enqueue(requestInfo);
-
-  connect(this, SIGNAL(nxmTrackedModsAvailable(QVariant, QVariant, int)), receiver,
-          SLOT(nxmTrackedModsAvailable(QVariant, QVariant, int)), Qt::UniqueConnection);
-
-  connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      Qt::UniqueConnection);
-
-  nextRequest();
-  return requestInfo.m_ID;
-}
-
-int NexusInterface::requestToggleTracking(QString gameName, int modID, bool track,
-                                          QObject* receiver, QVariant userData,
-                                          const QString& subModule,
-                                          MOBase::IPluginGame const* game)
-{
-  if (m_User.shouldThrottle()) {
-    throttledWarning(m_User);
-    return -1;
-  }
-
-  NXMRequestInfo requestInfo(modID, NXMRequestInfo::TYPE_TOGGLETRACKING, userData,
-                             subModule, game);
-  requestInfo.m_Track = track;
-  m_RequestQueue.enqueue(requestInfo);
-
-  connect(this, SIGNAL(nxmTrackingToggled(QString, int, QVariant, bool, int)), receiver,
-          SLOT(nxmTrackingToggled(QString, int, QVariant, bool, int)),
-          Qt::UniqueConnection);
-
-  connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      Qt::UniqueConnection);
-
-  nextRequest();
-  return requestInfo.m_ID;
-}
-
-int NexusInterface::requestInfoFromMd5(QString gameName, QByteArray& hash,
+int ModworkshopInterface::requestInfoFromMd5(QString gameName, QByteArray& hash,
                                        QObject* receiver, QVariant userData,
                                        const QString& subModule,
                                        MOBase::IPluginGame const* game)
 {
-  NXMRequestInfo requestInfo(hash, NXMRequestInfo::TYPE_FILEINFO_MD5, userData,
+  mwsRequestInfo requestInfo(hash, mwsRequestInfo::TYPE_FILEINFO_MD5, userData,
                              subModule, game);
   requestInfo.m_Hash = hash;
   requestInfo.m_AllowedErrors[QNetworkReply::NetworkError::ContentNotFoundError].append(
@@ -748,20 +682,20 @@ int NexusInterface::requestInfoFromMd5(QString gameName, QByteArray& hash,
   requestInfo.m_IgnoreGenericErrorHandler = true;
   m_RequestQueue.enqueue(requestInfo);
 
-  connect(this, SIGNAL(nxmFileInfoFromMd5Available(QString, QVariant, QVariant, int)),
-          receiver, SLOT(nxmFileInfoFromMd5Available(QString, QVariant, QVariant, int)),
+  connect(this, SIGNAL(mwsFileInfoFromMd5Available(QString, QVariant, QVariant, int)),
+          receiver, SLOT(mwsFileInfoFromMd5Available(QString, QVariant, QVariant, int)),
           Qt::UniqueConnection);
 
   connect(
-      this, SIGNAL(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
-      receiver, SLOT(nxmRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      this, SIGNAL(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
+      receiver, SLOT(mwsRequestFailed(QString, int, int, QVariant, int, int, QString)),
       Qt::UniqueConnection);
 
   nextRequest();
   return requestInfo.m_ID;
 }
 
-IPluginGame* NexusInterface::getGame(QString gameName) const
+IPluginGame* ModworkshopInterface::getGame(QString gameName) const
 {
   auto gamePlugins        = m_PluginContainer->plugins<IPluginGame>();
   IPluginGame* gamePlugin = qApp->property("managed_game").value<IPluginGame*>();
@@ -769,60 +703,31 @@ IPluginGame* NexusInterface::getGame(QString gameName) const
     if (plugin != nullptr &&
         plugin->gameShortName().compare(gameName, Qt::CaseInsensitive) == 0) {
       gamePlugin = plugin;
-      break;
+      break;00
     }
   }
   return gamePlugin;
 }
 
-void NexusInterface::cleanup()
+void ModworkshopInterface::cleanup()
 {
   m_AccessManager = nullptr;
   m_DiskCache     = nullptr;
 }
 
-void NexusInterface::clearCache()
+void ModworkshopInterface::clearCache()
 {
   m_DiskCache->clear();
   m_AccessManager->clearCookies();
 }
 
-void NexusInterface::nextRequest()
+void ModworkshopInterface::nextRequest()
 {
   if ((m_ActiveRequest.size() >= MAX_ACTIVE_DOWNLOADS) || m_RequestQueue.isEmpty()) {
     return;
   }
 
-  if (!getAccessManager()->validated()) {
-    if (!getAccessManager()->validateAttempted()) {
-      emit needLogin();
-      return;
-    } else if (getAccessManager()->validateWaiting()) {
-      return;
-    } else {
-      log::error(
-          "{}",
-          tr("You must authorize MO2 in Settings -> Nexus to use the Nexus API."));
-    }
-  }
-
-  if (m_User.exhausted()) {
-    m_RequestQueue.clear();
-    QTime time = QTime::currentTime();
-    QTime targetTime;
-    targetTime.setHMS((time.hour() + 1) % 23, 5, 0);
-    QString warning = tr("You've exceeded the Nexus API rate limit and requests are "
-                         "now being throttled. "
-                         "Your next batch of requests will be available in "
-                         "approximately %1 minutes and %2 seconds.")
-                          .arg(time.secsTo(targetTime) / 60)
-                          .arg(time.secsTo(targetTime) % 60);
-
-    log::warn("{}", warning);
-    return;
-  }
-
-  NXMRequestInfo info = m_RequestQueue.dequeue();
+  mwsRequestInfo info = m_RequestQueue.dequeue();
   info.m_Timeout      = new QTimer(this);
   info.m_Timeout->setInterval(60000);
 
@@ -834,14 +739,14 @@ void NexusInterface::nextRequest()
   if (!info.m_Reroute) {
     bool hasParams = false;
     switch (info.m_Type) {
-    case NXMRequestInfo::TYPE_DESCRIPTION:
-    case NXMRequestInfo::TYPE_MODINFO: {
+    case mwsRequestInfo::TYPE_DESCRIPTION:
+    case mwsRequestInfo::TYPE_MODINFO: {
       url = QString("%1/games/%2/mods/%3")
                 .arg(info.m_URL)
                 .arg(info.m_GameName)
                 .arg(info.m_ModID);
     } break;
-    case NXMRequestInfo::TYPE_CHECKUPDATES: {
+    case mwsRequestInfo::TYPE_CHECKUPDATES: {
       QString period;
       switch (info.m_UpdatePeriod) {
       case UpdatePeriod::DAY:
@@ -859,21 +764,21 @@ void NexusInterface::nextRequest()
                 .arg(info.m_GameName)
                 .arg(period);
     } break;
-    case NXMRequestInfo::TYPE_FILES:
-    case NXMRequestInfo::TYPE_GETUPDATES: {
+    case mwsRequestInfo::TYPE_FILES:
+    case mwsRequestInfo::TYPE_GETUPDATES: {
       url = QString("%1/games/%2/mods/%3/files")
                 .arg(info.m_URL)
                 .arg(info.m_GameName)
                 .arg(info.m_ModID);
     } break;
-    case NXMRequestInfo::TYPE_FILEINFO: {
+    case mwsRequestInfo::TYPE_FILEINFO: {
       url = QString("%1/games/%2/mods/%3/files/%4")
                 .arg(info.m_URL)
                 .arg(info.m_GameName)
                 .arg(info.m_ModID)
                 .arg(info.m_FileID);
     } break;
-    case NXMRequestInfo::TYPE_DOWNLOADURL: {
+    case mwsRequestInfo::TYPE_DOWNLOADURL: {
       ModRepositoryFileInfo* fileInfo = qobject_cast<ModRepositoryFileInfo*>(
           qvariant_cast<QObject*>(info.m_UserData));
       if (m_User.type() == APIUserAccountTypes::Premium) {
@@ -899,10 +804,10 @@ void NexusInterface::nextRequest()
         return;
       }
     } break;
-    case NXMRequestInfo::TYPE_ENDORSEMENTS: {
+    case mwsRequestInfo::TYPE_ENDORSEMENTS: {
       url = QString("%1/user/endorsements").arg(info.m_URL);
     } break;
-    case NXMRequestInfo::TYPE_TOGGLEENDORSEMENT: {
+    case mwsRequestInfo::TYPE_TOGGLEENDORSEMENT: {
       QString endorse = info.m_Endorse ? "endorse" : "abstain";
       url             = QString("%1/games/%2/mods/%3/%4")
                 .arg(info.m_URL)
@@ -912,7 +817,7 @@ void NexusInterface::nextRequest()
       postObject.insert("Version", info.m_ModVersion);
       postData.setObject(postObject);
     } break;
-    case NXMRequestInfo::TYPE_TOGGLETRACKING: {
+    case mwsRequestInfo::TYPE_TOGGLETRACKING: {
       url = QStringLiteral("%1/user/tracked_mods?domain_name=%2")
                 .arg(info.m_URL)
                 .arg(info.m_GameName);
@@ -920,10 +825,10 @@ void NexusInterface::nextRequest()
       postData.setObject(postObject);
       requestIsDelete = !info.m_Track;
     } break;
-    case NXMRequestInfo::TYPE_TRACKEDMODS: {
+    case mwsRequestInfo::TYPE_TRACKEDMODS: {
       url = QStringLiteral("%1/user/tracked_mods").arg(info.m_URL);
     } break;
-    case NXMRequestInfo::TYPE_FILEINFO_MD5: {
+    case mwsRequestInfo::TYPE_FILEINFO_MD5: {
       url = QStringLiteral("%1/games/%2/mods/md5_search/%3")
                 .arg(info.m_URL)
                 .arg(info.m_GameName)
@@ -971,12 +876,12 @@ void NexusInterface::nextRequest()
   m_ActiveRequest.push_back(info);
 }
 
-void NexusInterface::downloadRequestedNXM(const QString& url)
+void ModworkshopInterface::downloadRequestedmws(const QString& url)
 {
-  emit requestNXMDownload(url);
+  emit requestmwsDownload(url);
 }
 
-void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
+void ModworkshopInterface::requestFinished(std::list<mwsRequestInfo>::iterator iter)
 {
   QNetworkReply* reply = iter->m_Reply;
 
@@ -988,7 +893,7 @@ void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
     if (iter->m_AllowedErrors.contains(error) &&
         iter->m_AllowedErrors[error].contains(statusCode)) {
       // These errors are allows to silently happen.  They should be handled in
-      // nxmRequestFailed below.
+      // mwsRequestFailed below.
     } else if (statusCode == 429) {
       m_User.limits(parseLimits(reply));
 
@@ -1013,7 +918,7 @@ void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
         }
       }
     }
-    emit nxmRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
+    emit mwsRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
                           iter->m_UserData, iter->m_ID, statusCode, errorMsg);
   } else {
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -1033,70 +938,70 @@ void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
         nexusError = tr("empty response");
       }
       log::debug("nexus error: {}", nexusError);
-      emit nxmRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
+      emit mwsRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
                             iter->m_UserData, iter->m_ID, reply->error(), nexusError);
     } else {
       QJsonDocument responseDoc = QJsonDocument::fromJson(data);
       if (!responseDoc.isNull()) {
         QVariant result = responseDoc.toVariant();
         switch (iter->m_Type) {
-        case NXMRequestInfo::TYPE_DESCRIPTION: {
-          emit nxmDescriptionAvailable(iter->m_GameName, iter->m_ModID,
+        case mwsRequestInfo::TYPE_DESCRIPTION: {
+          emit mwsDescriptionAvailable(iter->m_GameName, iter->m_ModID,
                                        iter->m_UserData, result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_MODINFO: {
-          emit nxmModInfoAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+        case mwsRequestInfo::TYPE_MODINFO: {
+          emit mwsModInfoAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                    result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_CHECKUPDATES: {
-          emit nxmUpdateInfoAvailable(iter->m_GameName, iter->m_UserData, result,
+        case mwsRequestInfo::TYPE_CHECKUPDATES: {
+          emit mwsUpdateInfoAvailable(iter->m_GameName, iter->m_UserData, result,
                                       iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_FILES: {
-          emit nxmFilesAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+        case mwsRequestInfo::TYPE_FILES: {
+          emit mwsFilesAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                  result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_GETUPDATES: {
-          emit nxmUpdatesAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+        case mwsRequestInfo::TYPE_GETUPDATES: {
+          emit mwsUpdatesAvailable(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                    result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_FILEINFO: {
-          emit nxmFileInfoAvailable(iter->m_GameName, iter->m_ModID, iter->m_FileID,
+        case mwsRequestInfo::TYPE_FILEINFO: {
+          emit mwsFileInfoAvailable(iter->m_GameName, iter->m_ModID, iter->m_FileID,
                                     iter->m_UserData, result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_DOWNLOADURL: {
-          emit nxmDownloadURLsAvailable(iter->m_GameName, iter->m_ModID, iter->m_FileID,
+        case mwsRequestInfo::TYPE_DOWNLOADURL: {
+          emit mwsDownloadURLsAvailable(iter->m_GameName, iter->m_ModID, iter->m_FileID,
                                         iter->m_UserData, result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_ENDORSEMENTS: {
-          emit nxmEndorsementsAvailable(iter->m_UserData, result, iter->m_ID);
+        case mwsRequestInfo::TYPE_ENDORSEMENTS: {
+          emit mwsEndorsementsAvailable(iter->m_UserData, result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_TOGGLEENDORSEMENT: {
-          emit nxmEndorsementToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+        case mwsRequestInfo::TYPE_TOGGLEENDORSEMENT: {
+          emit mwsEndorsementToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                      result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_TOGGLETRACKING: {
+        case mwsRequestInfo::TYPE_TOGGLETRACKING: {
           auto results = result.toMap();
           auto message = results["message"].toString();
           if (message.contains(
                   QRegularExpression("User [0-9]+ is already Tracking Mod: [0-9]+")) ||
               message.contains(
                   QRegularExpression("User [0-9]+ is now Tracking Mod: [0-9]+"))) {
-            emit nxmTrackingToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+            emit mwsTrackingToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                     true, iter->m_ID);
           } else if (message.contains(QRegularExpression(
                          "User [0-9]+ is no longer tracking [0-9]+")) ||
                      message.contains(QRegularExpression(
                          "Users is not tracking mod. Unable to untrack."))) {
-            emit nxmTrackingToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
+            emit mwsTrackingToggled(iter->m_GameName, iter->m_ModID, iter->m_UserData,
                                     false, iter->m_ID);
           }
         } break;
-        case NXMRequestInfo::TYPE_TRACKEDMODS: {
-          emit nxmTrackedModsAvailable(iter->m_UserData, result, iter->m_ID);
+        case mwsRequestInfo::TYPE_TRACKEDMODS: {
+          emit mwsTrackedModsAvailable(iter->m_UserData, result, iter->m_ID);
         } break;
-        case NXMRequestInfo::TYPE_FILEINFO_MD5: {
-          emit nxmFileInfoFromMd5Available(iter->m_GameName, iter->m_UserData, result,
+        case mwsRequestInfo::TYPE_FILEINFO_MD5: {
+          emit mwsFileInfoFromMd5Available(iter->m_GameName, iter->m_UserData, result,
                                            iter->m_ID);
         } break;
         }
@@ -1104,7 +1009,7 @@ void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
         m_User.limits(parseLimits(reply));
         emit requestsChanged(getAPIStats(), m_User);
       } else {
-        emit nxmRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
+        emit mwsRequestFailed(iter->m_GameName, iter->m_ModID, iter->m_FileID,
                               iter->m_UserData, iter->m_ID, reply->error(),
                               tr("invalid response"));
       }
@@ -1112,10 +1017,10 @@ void NexusInterface::requestFinished(std::list<NXMRequestInfo>::iterator iter)
   }
 }
 
-void NexusInterface::requestFinished()
+void ModworkshopInterface::requestFinished()
 {
   QNetworkReply* reply = static_cast<QNetworkReply*>(sender());
-  for (std::list<NXMRequestInfo>::iterator iter = m_ActiveRequest.begin();
+  for (std::list<mwsRequestInfo>::iterator iter = m_ActiveRequest.begin();
        iter != m_ActiveRequest.end(); ++iter) {
     if (iter->m_Reply == reply) {
       iter->m_Timeout->stop();
@@ -1129,7 +1034,7 @@ void NexusInterface::requestFinished()
   }
 }
 
-void NexusInterface::requestError(QNetworkReply::NetworkError)
+void ModworkshopInterface::requestError(QNetworkReply::NetworkError)
 {
   QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
   if (reply == nullptr) {
@@ -1141,14 +1046,14 @@ void NexusInterface::requestError(QNetworkReply::NetworkError)
              reply->errorString(), reply->error());
 }
 
-void NexusInterface::requestTimeout()
+void ModworkshopInterface::requestTimeout()
 {
   QTimer* timer = qobject_cast<QTimer*>(sender());
   if (timer == nullptr) {
     log::warn("invalid sender type");
     return;
   }
-  for (std::list<NXMRequestInfo>::iterator iter = m_ActiveRequest.begin();
+  for (std::list<mwsRequestInfo>::iterator iter = m_ActiveRequest.begin();
        iter != m_ActiveRequest.end(); ++iter) {
     if (iter->m_Timeout == timer) {
       // this abort causes a "request failed" which cleans up the rest
@@ -1158,12 +1063,12 @@ void NexusInterface::requestTimeout()
   }
 }
 
-APIUserAccount NexusInterface::getAPIUserAccount() const
+APIUserAccount ModworkshopInterface::getAPIUserAccount() const
 {
   return m_User;
 }
 
-APIStats NexusInterface::getAPIStats() const
+APIStats ModworkshopInterface::getAPIStats() const
 {
   APIStats stats;
   stats.requestsQueued = m_RequestQueue.size();
@@ -1179,8 +1084,8 @@ QString get_management_url()
 }
 }  // namespace
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(
-    int modID, NexusInterface::NXMRequestInfo::Type type, QVariant userData,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(
+    int modID, ModworkshopInterface::mwsRequestInfo::Type type, QVariant userData,
     const QString& subModule, MOBase::IPluginGame const* game)
     : m_ModID(modID), m_ModVersion("0"), m_FileID(0), m_Reply(nullptr), m_Type(type),
       m_UpdatePeriod(UpdatePeriod::NONE), m_UserData(userData), m_Timeout(nullptr),
@@ -1190,8 +1095,8 @@ NexusInterface::NXMRequestInfo::NXMRequestInfo(
       m_Endorse(false), m_Track(false), m_Hash(QByteArray())
 {}
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(
-    int modID, QString modVersion, NexusInterface::NXMRequestInfo::Type type,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(
+    int modID, QString modVersion, ModworkshopInterface::mwsRequestInfo::Type type,
     QVariant userData, const QString& subModule, MOBase::IPluginGame const* game)
     : m_ModID(modID), m_ModVersion(modVersion), m_FileID(0), m_Reply(nullptr),
       m_Type(type), m_UpdatePeriod(UpdatePeriod::NONE), m_UserData(userData),
@@ -1201,8 +1106,8 @@ NexusInterface::NXMRequestInfo::NXMRequestInfo(
       m_Endorse(false), m_Track(false), m_Hash(QByteArray())
 {}
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(
-    int modID, int fileID, NexusInterface::NXMRequestInfo::Type type, QVariant userData,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(
+    int modID, int fileID, ModworkshopInterface::mwsRequestInfo::Type type, QVariant userData,
     const QString& subModule, MOBase::IPluginGame const* game)
     : m_ModID(modID), m_ModVersion("0"), m_FileID(fileID), m_Reply(nullptr),
       m_Type(type), m_UpdatePeriod(UpdatePeriod::NONE), m_UserData(userData),
@@ -1212,7 +1117,7 @@ NexusInterface::NXMRequestInfo::NXMRequestInfo(
       m_Endorse(false), m_Track(false), m_Hash(QByteArray())
 {}
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(Type type, QVariant userData,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(Type type, QVariant userData,
                                                const QString& subModule)
     : m_ModID(0), m_ModVersion("0"), m_FileID(0), m_Reply(nullptr), m_Type(type),
       m_UpdatePeriod(UpdatePeriod::NONE), m_UserData(userData), m_Timeout(nullptr),
@@ -1221,8 +1126,8 @@ NexusInterface::NXMRequestInfo::NXMRequestInfo(Type type, QVariant userData,
       m_GameName(""), m_Endorse(false), m_Track(false), m_Hash(QByteArray())
 {}
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(
-    UpdatePeriod period, NexusInterface::NXMRequestInfo::Type type, QVariant userData,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(
+    UpdatePeriod period, ModworkshopInterface::mwsRequestInfo::Type type, QVariant userData,
     const QString& subModule, MOBase::IPluginGame const* game)
     : m_ModID(0), m_ModVersion("0"), m_FileID(0), m_Reply(nullptr), m_Type(type),
       m_UpdatePeriod(period), m_UserData(userData), m_Timeout(nullptr),
@@ -1232,8 +1137,8 @@ NexusInterface::NXMRequestInfo::NXMRequestInfo(
       m_Endorse(false), m_Track(false), m_Hash(QByteArray())
 {}
 
-NexusInterface::NXMRequestInfo::NXMRequestInfo(
-    QByteArray& hash, NexusInterface::NXMRequestInfo::Type type, QVariant userData,
+ModworkshopInterface::mwsRequestInfo::mwsRequestInfo(
+    QByteArray& hash, ModworkshopInterface::mwsRequestInfo::Type type, QVariant userData,
     const QString& subModule, MOBase::IPluginGame const* game)
     : m_ModID(0), m_ModVersion("0"), m_FileID(0), m_Reply(nullptr), m_Type(type),
       m_UpdatePeriod(UpdatePeriod::NONE), m_UserData(userData), m_Timeout(nullptr),
