@@ -1,9 +1,9 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/hxenwxmpaob5xung?svg=true)](https://ci.appveyor.com/project/ModOrganizer2/modorganizer-736bd)
 
-# Mod Organizer
+# ModWorkshopOrganizer
 
-Mod Organizer (MO) is a tool for managing mod collections of arbitrary size. It is specifically designed for people who like to experiment with mods and thus need an easy and reliable way to install and uninstall them.
-Mod Organizer 2 is a mod manager created by Tannin to support 64-bit games like Skyrim Special Edition and Fallout 4 in addition to all the 32-bit games MO1 already supported.
+ModWorkshopOrganizer (MWSO) is a tool for managing mod collections of arbitrary size. It is specifically designed for people who like to experiment with mods and thus need an easy and reliable way to install and uninstall them.
+ModWorkshopOrganizer is a mod manager created by Tannin to support games.
 
 Tannin discontinued the project when he was hired by the Nexus team to develop their new Vortex mod manager.
 MO2 was not completed and was left with many issues. LePresidente managed to fix it to a usable state by himself after SkyrimSE came out, adding support for it, and releasing v2.0.8.
@@ -26,12 +26,7 @@ Credits to Tannin, LePresidente, Silarn, erasmux, AL12, LostDragonist, AnyOldNam
 
 ## Download Location
 
-* on [GitHub.com](https://github.com/Modorganizer2/modorganizer/releases)
-* on [NexusMods.com](https://www.nexusmods.com/skyrimspecialedition/mods/6194)
-
-## Old Download Location
-
-* [TanninOne/modorganizer/releases](https://github.com/TanninOne/modorganizer/releases)
+* None rn.
 
 ## Building
 
@@ -89,7 +84,3 @@ Here is a complete list:
 * https://github.com/ModOrganizer2/modorganizer-tool_inibakery
 * https://github.com/ModOrganizer2/modorganizer-uibase
 * https://github.com/ModOrganizer2/usvfs
-
-### Unused Repositories
-* https://github.com/ModOrganizer2/modorganizer-hookdll
-* https://github.com/TanninOne/modorganizer-tool_nmmimport
